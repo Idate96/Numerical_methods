@@ -52,9 +52,8 @@ class Grid:
         self.linear_scaling()
         return self.nodal_pts
 
-    def plot(self,show=True):
+    def plot(self, show=True):
         plt.plot(self.nodal_pts, np.zeros(self.n+1), '-o')
-        plt.ylim(-1, 2)
         if show:
             plt.show()
 

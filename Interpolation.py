@@ -39,9 +39,42 @@ class PolyBasis:
                 if i != j:
                     self.basis[j] *= (self.x-self.nodal_pts[i])/(self.nodal_pts[j]-self.nodal_pts[i])
 
+    def edge(self):
+        self.basis = np.ones((self.n, len(self.x)))
+        # lagrange poly
+        self.lagrange()
+
+        # derivative lagrange poly
+        np.seterr(divide='ignore', invalid='ignore')
+        for j in range(self.n):
+            self.basis[j] = 1/(x-self.nodal_pts[j]) * (P_prime(self.x,self.nodal_pts)/
+                                                 P_prime(self.nodal_pts[j],self.nodal_pts)-self.basis[j])
+            # Since the pts in the interval coincide with nodal_pts[j]
+            # we have to add the limit of the function
+            limit_value = 0
+            for l in range(self.n):
+                if l != j:
+                    limit_value += 1/(self.nodal_pts[j]-self.nodal_pts[l])
+            self.basis[j, np.where(abs(self.x - self.nodal_pts[j]) < 1.e-10)] = limit_value
+
+        # calculation of the edge poly
+        edge = np.zeros((self.n, len(self.x)))
+        for i in range(1,self.n):
+            for k in range(0,i):
+                edge[i] += self.basis[k]
+        self.basis = -edge
+
+    def lagrange_1(self):
+        for i in range(self.n):
+            np.seterr(divide='ignore', invalid='ignore')
+            self.basis[i] = P(self.x,self.nodal_pts)/\
+                                (P_prime(self.nodal_pts[i],self.nodal_pts)*(self.x-self.nodal_pts[i]))
+            self.basis[i, np.where(abs(self.x - self.nodal_pts[i]) < 1.e-10)] = 1
+
     def plot(self):
         for base in self.basis:
             plt.plot(self.x,base)
+        plt.ylim(-2,5)
         self.grid.plot()
 
 
@@ -96,15 +129,82 @@ def plot_funcs(funcs):
         error = plot_interpolation(func, interpolated_f, x_1)
         print('Error max: ', error)
 
+
+def plot_grid(grids,show=True):
+    if np.ndim(grids)>1:
+        for i, grid in enumerate(grids):
+            plt.plot(grid, np.ones(np.size(grid))*i, '-o')
+    else:
+        plt.plot(grids, np.zeros(len(grids)), '-o')
+    plt.ylim(-1, 2)
+
+    if show:
+        plt.show()
+
+# def basis_edge(x, grid):
+#     phi = np.ones((len(grid), len(x)))
+#     n = len(grid)-1
+#     for i in range(len(grid)):
+#         phi[i] = (n*(n+1)*legendre(n)(x)*(x-grid[i])+(1-x**2)*legendre_prime(x,n))/(
+#             n*(n+1)*legendre(n)(grid[i])*(x-grid[i])**2)
+#         phi[i,np.where(abs(x-grid[i]) < (b-a)/(len(x)*2))] = 0
+#         phi[0] = -n*(n+1)/4
+#         phi[-1] = -phi[0]
+#     return phi
+#
+#
+#
+#
+# def plot_basis(x, phi, grid_2):
+#     for base in phi:
+#         plt.plot(x,base)
+#     plot_grid(grid_2,show=False)
+#     plt.ylim(-2,5)
+#     plt.show()
+#
+
+
+def P(x, nodal_pts):
+    ans = 1
+    for i, nodal_pt in enumerate(nodal_pts):
+        ans *= (x-nodal_pt)
+    return ans
+
+
+def P_prime(x, nodal_pts):
+    ans = 0
+    for n in range(len(nodal_pts)):
+        prod = 1
+        for l in range(len(nodal_pts)):
+            if l != n:
+                prod *= (x-nodal_pts[l])
+        ans += prod
+    return ans
+
+
+
+
+
 if __name__ == '__main__':
     a,b = -1,1
-    x = np.linspace(a,b, 1001)
-
-    grid = Grid(a,b,3)
+    x = np.linspace(a,b, 101)
+    #
+    grid = Grid(a,b,4)
     grid.gauss_lobatto()
-
+    #
     basis = PolyBasis(x,grid)
     basis.lagrange()
+    basis.plot()
+
+    basis_1 = PolyBasis(x,grid)
+    basis_1.edge()
+    basis_1.plot()
+
+    # basis_e = basis_edge(x,grid.nodal_pts)
+    # plot_basis(x,basis_e,grid.nodal_pts)
+
+    # basis = PolyBasis(x,grid)
+    # basis.lagrange()
     # basis.plot()
 
     # grid_0.plot()
@@ -145,5 +245,5 @@ if __name__ == '__main__':
 
     # # error tends to decrease with the Chebischev nodes
     # print('Error max: ', error)
-    funcs = [f,f_poly5,f_abs,f_abs3,f_gauss,f_runge,f_step]
-    plot_funcs(funcs)
+    # funcs = [f,f_poly5,f_abs,f_abs3,f_gauss,f_runge,f_step]
+    # plot_funcs(funcs)
