@@ -17,6 +17,28 @@ def f_gauss(x): return np.exp(-(x-2)**2/2.)        # Very similar curve to above
 # Grid
 
 
+class Grid:
+
+    def __init__(self,start,end,num):
+        self.a = start
+        self.b = end
+        self.n = num
+        self.nodal_pts = np.empty(num+1)
+
+    def uniform(self):
+        return np.linspace(self.a, self.b, self.n)
+
+    def chebychev(self):
+        # chebychev interpolation nodes impose the minimal upper bound on the monic polinomial
+        # there exist a convient formula to find the root of the Ch. polynomial
+        i = np.arange(0, n + 1)
+        # nodal point in [-1,1]
+        self.nodal_pts = np.cos((2 * i + 1) / (2 * (n + 1)) * np.pi)
+        return (-self.nodal_pts + 1) * (b - a) / 2 + a
+
+
+
+
 def grid_uniform(a,b,n):
     # n is the number of elements in the grid
     return np.linspace(a,b,n)
@@ -174,7 +196,9 @@ def plot_funcs(funcs):
         print('Error max: ', error)
 
 if __name__ == '__main__':
-    pass
+    grid_0 = Grid(-1,1,5)
+    uni_grid_0 = grid_0.uniform()
+    plot_grid(uni_grid_0)
     # grid = grid_chebychev(-1,1,3)
     # grid_2 = grid_uniform(-2,2,3)
     # print('Chebishev grid ', grid)
