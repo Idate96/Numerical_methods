@@ -174,43 +174,7 @@ if __name__ == '__main__':
     basis_1.edge()
     basis_1.plot('GL edge', r'$e_i(\xi)$', save=True)
 
-    # basis_e = basis_edge(x,grid.nodal_pts)
-    # plot_basis(x,basis_e,grid.nodal_pts)
 
-    # basis = PolyBasis(x,grid)
-    # basis.lagrange()
-    # basis.plot()
-
-    # grid_0.plot()
-
-    # grid = grid_chebychev(-1,1,3)
-    # grid_2 = grid_uniform(-2,2,3)
-    # print('Chebishev grid ', grid)
-    # x = np.linspace(-1,1,1001)
-    # plot_grid(grid,show=False)
-
-    # testing legendre derivative and closeness of chebichev
-    # legendre_p = legendre_prime(x,2)
-    # legendre_pp = legendre_double_prime(x,5)
-    # legendre_pp2 = legendre_double_prime_num(x,3)
-    # plt.plot(x,legendre_p),\
-    # plt.plot(x,legendre_pp),\
-    # plt.plot(x, legendre_pp2),
-
-    # # testing gauss lobatta
-    # grid_lobatto = grid_gauss_lobatto(-1,1,2)
-    # #
-    # print(grid_lobatto)
-    # plot_grid(grid_lobatto)
-
-    # phi_mon = basis_monomial(x,grid_2)
-    # phi_new = basis_newton(x,grid_2)
-    # phi_lag = basis_lagrange(x,grid_2)
-    # # plot_basis(x,phi_mon)
-    # # plot_basis(x,phi_new)
-    # plot_basis(x,phi_lag, grid_2)
-    # print(basis_lagrange([grid_2[1]],grid_2))
-    # plot_grid([grid, grid_2])
 
     # coeff, A = find_interpolation_coeff('lagrange',grid_2,f)
     # phi = basis_lagrange(x,grid_2)
