@@ -1,4 +1,4 @@
-from Interpolation import *
+from interpolation import *
 import unittest
 
 class Test_lagrange_orthogonality(unittest.TestCase):

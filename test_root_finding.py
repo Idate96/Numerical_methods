@@ -1,4 +1,4 @@
-from Root_finding import *
+from root_finding import *
 import random
 
 
