@@ -22,7 +22,6 @@ class PolyBasis:
         self.basis = np.ones((len(self.nodal_pts), len(x)))
 
     def monomial(self):
-        self.basis = np.zeros((self.n, len(self.x)))
         for i in range(self.n):
             self.basis[i,:] = self.x**i
 
@@ -71,10 +70,21 @@ class PolyBasis:
                                 (P_prime(self.nodal_pts[i],self.nodal_pts)*(self.x-self.nodal_pts[i]))
             self.basis[i, np.where(abs(self.x - self.nodal_pts[i]) < 1.e-10)] = 1
 
-    def plot(self):
+    def plot(self, *args, save=False):
+        y_min, y_max = 0,0
         for base in self.basis:
             plt.plot(self.x,base)
-        plt.ylim(-2,5)
+            if y_min > np.min(base):
+                y_min = np.min(base)
+            if y_max < np.max(base):
+                y_max = np.max(base)
+        plt.ylim(y_min*1.1,y_max*1.1)
+        if args:
+            plt.title(args[0] + ' interpolation')
+            plt.ylabel(args[1])
+        plt.xlabel(r'$\xi$')
+        if save:
+            plt.savefig('../Images_numerical/'+args[0]+'_N_'+str(self.n-1)+'.png', bbox_inches='tight')
         self.grid.plot()
 
 
@@ -130,39 +140,6 @@ def plot_funcs(funcs):
         print('Error max: ', error)
 
 
-def plot_grid(grids,show=True):
-    if np.ndim(grids)>1:
-        for i, grid in enumerate(grids):
-            plt.plot(grid, np.ones(np.size(grid))*i, '-o')
-    else:
-        plt.plot(grids, np.zeros(len(grids)), '-o')
-    plt.ylim(-1, 2)
-
-    if show:
-        plt.show()
-
-# def basis_edge(x, grid):
-#     phi = np.ones((len(grid), len(x)))
-#     n = len(grid)-1
-#     for i in range(len(grid)):
-#         phi[i] = (n*(n+1)*legendre(n)(x)*(x-grid[i])+(1-x**2)*legendre_prime(x,n))/(
-#             n*(n+1)*legendre(n)(grid[i])*(x-grid[i])**2)
-#         phi[i,np.where(abs(x-grid[i]) < (b-a)/(len(x)*2))] = 0
-#         phi[0] = -n*(n+1)/4
-#         phi[-1] = -phi[0]
-#     return phi
-#
-#
-#
-#
-# def plot_basis(x, phi, grid_2):
-#     for base in phi:
-#         plt.plot(x,base)
-#     plot_grid(grid_2,show=False)
-#     plt.ylim(-2,5)
-#     plt.show()
-#
-
 
 def P(x, nodal_pts):
     ans = 1
@@ -182,9 +159,6 @@ def P_prime(x, nodal_pts):
     return ans
 
 
-
-
-
 if __name__ == '__main__':
     a,b = -1,1
     x = np.linspace(a,b, 101)
@@ -194,11 +168,11 @@ if __name__ == '__main__':
     #
     basis = PolyBasis(x,grid)
     basis.lagrange()
-    basis.plot()
+    basis.plot('GL nodal', r'$l_i(\xi)$', save=True)
 
     basis_1 = PolyBasis(x,grid)
     basis_1.edge()
-    basis_1.plot()
+    basis_1.plot('GL edge', r'$e_i(\xi)$', save=True)
 
     # basis_e = basis_edge(x,grid.nodal_pts)
     # plot_basis(x,basis_e,grid.nodal_pts)

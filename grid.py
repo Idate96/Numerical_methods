@@ -61,27 +61,31 @@ class Grid:
         print('Nodal point of the grid: \n', self.nodal_pts)
 
 
-def plot_grids(grids,show=True):
+def plot_grids(grids, *args, show=True, save=False):
     if np.ndim(grids)>1:
         for i, grid in enumerate(grids):
-            plt.plot(grid, np.ones(np.size(grid))*i, '-o')
+            if args:
+                plt.plot(grid, np.ones(np.size(grid))*i, '-o', label=args[i])
+            else:
+                plt.plot(grid, np.ones(np.size(grid)) * i, '-o')
     else:
         plt.plot(grids, np.zeros(len(grids)), '-o')
+    plt.title(args[-1] + 'for N = {0}' .format(np.size(grids[0])-1))
+    plt.xlabel(r'$\xi$')
     plt.ylim(-1, np.ndim(grids)+1)
-
+    plt.legend()
+    if save:
+        plt.savefig('../Images_numerical/Grid_N_' + str(np.size(grids[0])-1) + '.png', bbox_inches='tight')
     if show:
         plt.show()
 
 
-# if __name__ == '__main__':
-#     grid_0 = Grid(-1,1,7)
-#
-#     uni_grid_0 = grid_0.uniform()
-#     lob_grid_0 = grid_0.gauss_lobatto()
-#     ch_grid_0 = grid_0.chebychev()
-#
-#     show_grid(ch_grid_0)
-#     show_grid(uni_grid_0)
-#     show_grid(lob_grid_0)
-#
-#     plot_grids([uni_grid_0,ch_grid_0,lob_grid_0])
+if __name__ == '__main__':
+    grid_0 = Grid(-1,1,4)
+
+    uni_grid_0 = grid_0.uniform()
+    lob_grid_0 = grid_0.gauss_lobatto()
+    ch_grid_0 = grid_0.chebychev()
+
+    plot_grids([uni_grid_0, ch_grid_0, lob_grid_0], 'Uniform', 'Chebychev', 'Gauss-Lobatto',
+               'Grid comparison', save=True)
