@@ -83,7 +83,6 @@ def plot_grids(grids, *args, show=True, save=False):
     if show:
         plt.show()
 
-
 if __name__ == '__main__':
     grid_0 = Grid(-1, 1, 4)
 

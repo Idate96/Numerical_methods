@@ -1,2 +1,2 @@
 # Numerical_methods
-General numerical methods 
+General numerical methods

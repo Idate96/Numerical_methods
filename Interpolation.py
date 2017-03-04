@@ -1,17 +1,41 @@
-import matplotlib.pyplot as plt
-from legendre_functions import *
+
 from grid import Grid
-
-def f(x): return np.sin(np.pi*x/2.)
-def f_poly5(x): return 0.001*x**5 + 0.02*x**3 - x  # Polynomial
-def f_step(x): return np.sign(x-1)                 # Discontinuous at x=2
-def f_abs(x): return np.abs(x-2)                   # Discontinuous derivative at x=2
-def f_abs3(x): return np.abs((x-2)**3)             # Discontinuous 3rd derivative at x=2
-def f_runge(x): return 1./(1+(x-2)**2)             # Infinitely differentiable (everywhere)
-def f_gauss(x): return np.exp(-(x-2)**2/2.)        # Very similar curve to above
+import matplotlib.pyplot as plt
+import numpy as np
 
 
-class PolyBasis:
+def f(x):
+    return np.sin(np.pi * x / 2.)
+
+
+def f_poly5(x):
+    return 0.001 * x ** 5 + 0.02 * x ** 3 - x  # Polynomial
+
+
+def f_step(x):
+    return np.sign(x - 1)                 # Discontinuous at x=2
+
+
+# Discontinuous derivative at x=2
+def f_abs(x):
+    return np.abs(x - 2)
+
+
+# Discontinuous 3rd derivative at x=2
+def f_abs3(x):
+    return np.abs((x - 2) ** 3)
+
+
+# Infinitely differentiable (everywhere)
+def f_runge(x):
+    return 1. / (1 + (x - 2) ** 2)
+
+
+def f_gauss(x):
+    return np.exp(-(x - 2) ** 2 / 2.)
+
+
+class PolyBasis(object):
 
     def __init__(self, x, grid):
         self.x = x
@@ -23,20 +47,22 @@ class PolyBasis:
 
     def monomial(self):
         for i in range(self.n):
-            self.basis[i,:] = self.x**i
+            self.basis[i, :] = self.x ** i
 
     def newton(self):
+        """Calculate newton polynomial basis."""
         self.basis = np.ones((self.n, len(self.x)))
         for i in range(self.n):
             for j in range(i):
-                self.basis[i,:] *= (self.x-self.nodal_pts[j])
+                self.basis[i, :] *= (self.x - self.nodal_pts[j])
 
     def lagrange(self):
         self.basis = np.ones((self.n, len(self.x)))
         for j in range(self.n):
             for i in range(self.n):
                 if i != j:
-                    self.basis[j] *= (self.x-self.nodal_pts[i])/(self.nodal_pts[j]-self.nodal_pts[i])
+                    self.basis[j] *= (self.x - self.nodal_pts[i]) / \
+                        (self.nodal_pts[j] - self.nodal_pts[i])
 
     def edge(self):
         self.basis = np.ones((self.n, len(self.x)))
@@ -46,52 +72,56 @@ class PolyBasis:
         # derivative lagrange poly
         np.seterr(divide='ignore', invalid='ignore')
         for j in range(self.n):
-            self.basis[j] = 1/(x-self.nodal_pts[j]) * (P_prime(self.x,self.nodal_pts)/
-                                                 P_prime(self.nodal_pts[j],self.nodal_pts)-self.basis[j])
+            self.basis[j] = 1 / (x - self.nodal_pts[j]) * (P_prime(self.x, self.nodal_pts) /
+                                                           P_prime(self.nodal_pts[j], self.nodal_pts) - self.basis[j])
             # Since the pts in the interval coincide with nodal_pts[j]
             # we have to add the limit of the function
             limit_value = 0
             for l in range(self.n):
                 if l != j:
-                    limit_value += 1/(self.nodal_pts[j]-self.nodal_pts[l])
-            self.basis[j, np.where(abs(self.x - self.nodal_pts[j]) < 1.e-10)] = limit_value
+                    limit_value += 1 / (self.nodal_pts[j] - self.nodal_pts[l])
+            self.basis[j, np.where(
+                abs(self.x - self.nodal_pts[j]) < 1.e-10)] = limit_value
 
         # calculation of the edge poly
         edge = np.zeros((self.n, len(self.x)))
-        for i in range(1,self.n):
-            for k in range(0,i):
+        for i in range(1, self.n):
+            for k in range(0, i):
                 edge[i] += self.basis[k]
         self.basis = -edge
 
     def lagrange_1(self):
         for i in range(self.n):
             np.seterr(divide='ignore', invalid='ignore')
-            self.basis[i] = P(self.x,self.nodal_pts)/\
-                                (P_prime(self.nodal_pts[i],self.nodal_pts)*(self.x-self.nodal_pts[i]))
-            self.basis[i, np.where(abs(self.x - self.nodal_pts[i]) < 1.e-10)] = 1
+            self.basis[i] = P(self.x, self.nodal_pts) /\
+                (P_prime(self.nodal_pts[i], self.nodal_pts)
+                 * (self.x - self.nodal_pts[i]))
+            self.basis[i, np.where(
+                abs(self.x - self.nodal_pts[i]) < 1.e-10)] = 1
 
     def plot(self, *args, save=False):
-        y_min, y_max = 0,0
+        y_min, y_max = 0, 0
         for base in self.basis:
-            plt.plot(self.x,base)
+            plt.plot(self.x, base)
             if y_min > np.min(base):
                 y_min = np.min(base)
             if y_max < np.max(base):
                 y_max = np.max(base)
-        plt.ylim(y_min*1.1,y_max*1.1)
+        plt.ylim(y_min * 1.1, y_max * 1.1)
         if args:
             plt.title(args[0] + ' interpolation')
             plt.ylabel(args[1])
         plt.xlabel(r'$\xi$')
         if save:
-            plt.savefig('../Images_numerical/'+args[0]+'_N_'+str(self.n-1)+'.png', bbox_inches='tight')
+            plt.savefig('../Images_numerical/' +
+                        args[0] + '_N_' + str(self.n - 1) + '.png', bbox_inches='tight')
         self.grid.plot()
 
 
 def find_interpolation_coeff(type, grid, f):
-    my_basis = PolyBasis(grid.nodal_pts,grid)
+    my_basis = PolyBasis(grid.nodal_pts, grid)
     # Vandermonde matrix
-    A = np.zeros((np.size(grid.nodal_pts),np.size(grid.nodal_pts)))
+    A = np.zeros((np.size(grid.nodal_pts), np.size(grid.nodal_pts)))
     b = f(grid.nodal_pts)
     if type == 'lagrange':
         my_basis.lagrange()
@@ -99,24 +129,22 @@ def find_interpolation_coeff(type, grid, f):
         my_basis.newton()
     elif type == 'monomial':
         my_basis.monomial()
-    for i,base in enumerate(my_basis.basis):
-        A[:,i] = base
-    coeff = np.linalg.solve(A,b)
+    for i, base in enumerate(my_basis.basis):
+        A[:, i] = base
+    coeff = np.linalg.solve(A, b)
     return coeff, A
 
 
 def reconstruct(coeff, basis):
-    '''
-    Reconstruct polynomial from basis
-    '''
+    """Reconstruct polynomial from basis."""
     return coeff.dot(basis.basis)
 
 
 def plot_interpolation(f, interpolated_f, x):
     error = abs(f(x) - interpolated_f)
-    plt.plot(x,f(x),'-', label='Original function')
-    plt.plot(x,interpolated_f, '-', label='Interpolated function')
-    plt.plot(x,error,'-', label='error')
+    plt.plot(x, f(x), '-', label='Original function')
+    plt.plot(x, interpolated_f, '-', label='Interpolated function')
+    plt.plot(x, error, '-', label='error')
     plt.xlabel('x'), plt.ylabel('f(x)')
     plt.legend(), plt.show()
     error_max = np.max(error)
@@ -140,11 +168,10 @@ def plot_funcs(funcs):
         print('Error max: ', error)
 
 
-
 def P(x, nodal_pts):
     ans = 1
     for i, nodal_pt in enumerate(nodal_pts):
-        ans *= (x-nodal_pt)
+        ans *= (x - nodal_pt)
     return ans
 
 
@@ -154,23 +181,45 @@ def P_prime(x, nodal_pts):
         prod = 1
         for l in range(len(nodal_pts)):
             if l != n:
-                prod *= (x-nodal_pts[l])
+                prod *= (x - nodal_pts[l])
         ans += prod
     return ans
 
 
+class Splines(object):
+    """
+    Piecewise interpolation of function on subintervals.
+    The degree of the interpolant determines the number of points in the interval needed.
+    Current options: -cubic
+    """
+
+    def __init__(self, x, Grid, f):
+        self.nodal_pts = Grid.nodal_pts
+        self.x = x
+        self.h = self.x[1:] - self.[:-1]
+        self.coeffs = np.empty(1)
+        self.f = f
+
+    def cubic_function(self):
+        return self.coeffs[:, 0]
+
+    def cubic()
+
+    # First solve linear system to find coeffs[:,2]
+
+
 if __name__ == '__main__':
-    a,b = -1,1
-    x = np.linspace(a,b, 101)
+    a, b = -1, 1
+    x = np.linspace(a, b, 101)
     #
-    grid = Grid(a,b,4)
+    grid = Grid(a, b, 4)
     grid.gauss_lobatto()
     #
-    basis = PolyBasis(x,grid)
+    basis = PolyBasis(x, grid)
     basis.lagrange()
     basis.plot('GL nodal', r'$l_i(\xi)$', save=True)
 
-    basis_1 = PolyBasis(x,grid)
+    basis_1 = PolyBasis(x, grid)
     basis_1.edge()
     basis_1.plot('GL edge', r'$e_i(\xi)$', save=True)
 
