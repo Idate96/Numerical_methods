@@ -78,17 +78,69 @@ def plot_grids(grids, *args, show=True, save=False):
     plt.ylim(-1, np.ndim(grids) + 1)
     plt.legend()
     if save:
-        plt.savefig('../Images_numerical/Grid_N_' +
+        plt.savefig('imamges/Grid_N_' +
                     str(np.size(grids[0]) - 1) + '.png', bbox_inches='tight')
     if show:
         plt.show()
 
-if __name__ == '__main__':
-    grid_0 = Grid(-1, 1, 4)
 
-    uni_grid_0 = grid_0.uniform()
-    lob_grid_0 = grid_0.gauss_lobatto()
-    ch_grid_0 = grid_0.chebychev()
+class Grid2d(object):
 
-    plot_grids([uni_grid_0, ch_grid_0, lob_grid_0], 'Uniform',
-               'Chebychev', 'Gauss-Lobatto', 'Grid comparison', save=False)
+    def __init__(self, start, end, n):
+        self.n = n
+        self.nodal_pts = None
+        self.grid1d = np.array((Grid(start[0], end[0], n[0]), Grid(start[1], end[1], n[1])))
+        self.xx = None
+        self.yy = None
+
+    def uniform(self):
+        for grid in self.grid1d:
+            grid.uniform()
+        self.xx, self.yy = np.meshgrid(self.grid1d[0].nodal_pts, self.grid1d[1].nodal_pts)
+        self.nodal_pts = np.dstack((self.xx, self.yy))
+
+    def chebychev(self):
+        for grid in self.grid1d:
+            grid.chebychev()
+        self.xx, self.yy = np.meshgrid(self.grid1d[0].nodal_pts, self.grid1d[1].nodal_pts)
+        self.nodal_pts = np.dstack((self.xx, self.yy))
+
+    def gauss_lobatto(self):
+        for grid in self.grid1d:
+            grid.gauss_lobatto()
+        self.xx, self.yy = np.meshgrid(self.grid1d[0].nodal_pts, self.grid1d[1].nodal_pts)
+        self.nodal_pts = np.dstack((self.yy, self.xx))
+
+    def plot(self):
+        plt.scatter(self.xx, self.yy, s=10)
+        plt.title('Computational grid')
+        plt.ylabel('y')
+        plt.xlabel('x')
+        plt.show()
+
+    def __str__(self):
+        nodalpts = "The nodal points are \n" + str(self.nodal_pts)
+        description = "\nThe grid is organized as follows:\ngrid[0,0] = " + str(self.nodal_pts[0, 0]) + "\ngrid[0,-1] = " + str(self.nodal_pts[0, -1]) + "\ngrid[-1,0] = " + \
+            str(self.nodal_pts[-1, 0]) + "\ngrid[-1,-1] = " + str(self.nodal_pts[-1, -1])
+        return nodalpts + description
+
+
+# if __name__ == '__main__':
+    # grid_0 = Grid(-1, 1, 4)
+    #
+    # uni_grid_0 = grid_0.uniform()
+    # lob_grid_0 = grid_0.gauss_lobatto()
+    # ch_grid_0 = grid_0.chebychev()
+    #
+    # plot_grids([uni_grid_0, ch_grid_0, lob_grid_0], 'Uniform',
+    #            'Chebychev', 'Gauss-Lobatto', 'Grid comparison', save=False)
+
+    # grid2d = Grid2d((-1, -1), (1, 1), (4, 4))
+    # grid2d.gauss_lobatto()
+    # grid2d.plot()
+    # print(grid2d)
+
+    # grid2d.plot()
+    # print(np.shape(grid2d.nodal_pts))
+    # print(grid2d.nodal_pts[0, 0], grid2d.nodal_pts[1, 0], grid2d.nodal_pts[-1, -1])
+    # print(grid2d.nodal_pts)

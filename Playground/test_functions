@@ -1,0 +1,8 @@
+def f(x=None):
+    if isinstance(x, (int, float)):
+        return 1
+    else:
+        return 0
+
+print(f())
+print(f([10.]))
