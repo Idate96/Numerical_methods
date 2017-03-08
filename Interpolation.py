@@ -3,39 +3,12 @@ from grid import Grid, Grid2d
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly
+import math
 plotly.tools.set_credentials_file(username='lorenzoterenzi96', api_key='sXv7B4MQcJKMvaYp96Jq')
-
-
-def f(x):
-    return np.sin(np.pi * x / 2.)
-
-
-def f_poly5(x):
-    return 0.001 * x ** 5 + 0.02 * x ** 3 - x  # Polynomial
-
-
-def f_step(x):
-    return np.sign(x - 1)                 # Discontinuous at x=2
-
-
-# Discontinuous derivative at x=2
-def f_abs(x):
-    return np.abs(x - 2)
-
-
-# Discontinuous 3rd derivative at x=2
-def f_abs3(x):
-    return np.abs((x - 2) ** 3)
-
-# Infinitely differentiable (everywhere)
-
-
-def f_runge(x):
-    return 1. / (1 + (4. * x) ** 2)
-
-
-def f_gauss(x):
-    return np.exp(-(x - 2) ** 2 / 2.)
+import stiffness_matrix
+import integration
+from scipy import integrate
+from functools import partial
 
 
 class PolyBasis(object):
@@ -75,7 +48,7 @@ class PolyBasis(object):
         if x != None:
             return self.basis
 
-    def lagrange(self, x=None):
+    def lagrange(self, x=None, index_basis=None):
         if x != None:
             self.x = x
         self.init_basis()
@@ -85,9 +58,14 @@ class PolyBasis(object):
                     self.basis[j] *= (self.x - self.nodal_pts[i]) / \
                         (self.nodal_pts[j] - self.nodal_pts[i])
         if x != None:
-            return self.basis
+            if index_basis is not None:
+                print("Index is given: ", index_basis)
+                print("current domain: ", x)
+                return self.basis[index_basis]
+            else:
+                return self.basis
 
-    def edge(self, x=None):
+    def edge(self, x=None, index_basis=None):
         if x != None:
             self.x = x
         self.init_basis()
@@ -115,8 +93,16 @@ class PolyBasis(object):
             for k in range(0, i):
                 edge[i] += self.basis[k]
         self.basis = -edge
+
         if x != None:
-            return self.basis
+            print("Current index: ", index_basis)
+
+            if index_basis is not None:
+                print("Index is given: ", index_basis)
+                print("current domain: ", x)
+                return self.basis[index_basis][0]
+            else:
+                return self.basis
 
     def lagrange_1(self):
         for i in range(self.n):
@@ -340,7 +326,47 @@ class Polybasis2d(object):
         trace1 = go.Surface(x=x, y=y, z=self.basis[i, j], colorscale='Viridis')
         py.iplot([trace1])
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    # testing inner product
+    a, b = -1, 1
+    n = 2
+    n_glob_int = math.ceil((n ** 2 + 1) / 2)
+    x = np.linspace(a, b, 101)
+    #
+    grid = Grid(a, b, n)
+    grid.gauss_lobatto()
+    # grid.plot()
+    #
+    basis = PolyBasis(x, grid)
+    # basis.lagrange()
+    # basis.edge()
+    M = stiffness_matrix.inner_product(basis, degree=1)
+    basis_0 = partial(basis.edge, index_basis=0)
+    # basis_1
+    print('basis at pt :', basis_0(x))
+    # print('shape basis.lagrange(x,0) ', np.shape(basis.lagrange(x, 0)))
+    # print('shape basis.lagrange ', np.shape(basis.lagrange(x)))
+    plt.plot(x, basis_0(x))
+    # plt.show()
+    # basis_00**2 inner product works
+    # int = integration.quad_glob([basis_0, basis_0], -1, 1, n_glob_int)
+    # print(int)
+    # print('integral lagrange ', int)
+    print(M)
+
+    # for i in range(n):
+    #     for j in range(n):
+    #         prod = partial(stiffness_matrix.product_basis, fs=[
+    #                        basis.edge, basis.edge], indexes=[i, j])
+    #         print('inner product {0},{1} : {2}' .format(i, j, integrate.quad(prod, -1, 1)[0]))
+    # prod = partial(stiffness_matrix.product_basis, fs=[basis.edge, basis.edge], indexes=[1, 0])
+    # print('Product of basis ', prod(x))
+    # l = basis.edge(0.5)
+    # prod = basis.basis[3]
+    # print('Basis edge \n', l)
+    # print(np.size(prod))
+    # plt.plot(x, basis.basis[2])
+    # plt.show()
     # 2d lagrange testing
     # grid2d = Grid2d((-1, -1), (1, 1), (4, 4))
     # grid2d.uniform()
@@ -380,15 +406,15 @@ class Polybasis2d(object):
     # grid.gauss_lobatto()
     # #
     # basis = PolyBasis(x, grid)
-    # # x = 0.5
-    # # e_0 = basis.lagrange(x)
-    # # print('basis 0 at x : \n', e_0)
+    # x = 0.5
+    # e_0 = basis.lagrange(x)
+    # print('basis 0 at x : \n', e_0)
     # basis.lagrange()
     # basis.plot('GL nodal', r'$l_i(\xi)$', save=True)
-    # #
+    #
     # basis_1 = PolyBasis(x, grid)
-    # # e_1 = basis_1.edge(x)
-    # # print('basis 1 at x : \n', e_1)
+    # e_1 = basis_1.edge(x)
+    # print('basis 1 at x : \n', e_1)
     # basis_1.edge()
 
     # basis_1.plot('GL edge', r'$e_i(\xi)$', save=True)
