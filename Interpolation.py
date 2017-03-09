@@ -227,7 +227,7 @@ class Polybasis2d(object):
         self.basis_y = PolyBasis(self.domain[1], self.grid.grid1d[1])
 
     def init_basis(self):
-    """Setup structure of basis attribute a 4 dimensional array.
+        """Setup structure of basis attribute a 4 dimensional array.
 
         Example:
             basis[i,j,k,n] identifies the basis function for the nodal point [i,j] in the 2dgrid, k and n are the y and x position in the domain where the basis function is evaluated.

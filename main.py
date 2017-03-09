@@ -9,7 +9,7 @@ if __name__ == '__main__':
     f_exact = original_f
     x = np.linspace(a, b, m)
     phi = poisson_homo(func, a, b, n, m)
-    print('Value of FEM solution ϕ : \n', phi)
+    print('Value of FEM solution : \n', phi)
     plt.plot(x, f_exact(x))
     plt.plot(x, phi)
     plt.show()
