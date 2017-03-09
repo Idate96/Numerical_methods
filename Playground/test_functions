@@ -6,3 +6,36 @@ def f(x=None):
 
 print(f())
 print(f([10.]))
+
+
+# test functions
+
+def f_poly(x): return x**3 - x + 1.
+def dfdx_poly(x): return 3.*x**2 - 1.
+def d2fdx2_poly(x): return 6.*x
+
+def f_tan(x): return np.tan(x)-x
+def dfdx_tan(x): return np.tan(x)**2
+def d2fdx2_tan(x): return 2.*np.sin(x)/np.cos(x)**3
+
+def f_cos(x): return np.cos(x) - 2.* x
+def dfdx_cos(x): return -np.sin(x) - 2.
+def d2fdx2_cos(x): return -np.cos(x)
+
+def f_exp(x): return  np.exp(x) - 2.*x
+def dfdx_exp(x): return np.exp(x) - 2.
+def d2fdx2_exp(x): return np.exp(x)
+
+def f_xexp(x): return x*np.exp(-x**2)
+def dfdx_xexp(x): return np.exp(-x**2) - 2*x**2*np.exp(-x**2)
+
+def phi(x): return 0.5*np.cos(x)
+
+def f_2d(xv):
+    x, y = xv[0], xv[1]
+    return np.array([1-x**2-y**2, .25 - x*y])
+
+def dfdx_2d(xv):
+    x, y = xv[0], xv[1]
+    return np.array([[-2*x,-2*y],
+                     [  -y,  -x]])
