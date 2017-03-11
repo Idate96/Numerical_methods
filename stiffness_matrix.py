@@ -40,7 +40,7 @@ def inner_product(basis, degree):
         (n-degree) × (n-degree) array containing the values of the inner product over the element
     """
     # TODO(merge the cases using the int degree, generalize the interval from -1,1 to a,b)
-    degree_quad = math.ceil((basis.n ** 2 + 1) / 2)
+    # degree_quad = math.ceil((basis.n ** 2 + 1) / 2)
     if degree == 1:
         fs = [basis.edge, basis.edge]
         M = np.zeros((basis.n - 1, basis.n - 1))

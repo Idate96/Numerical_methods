@@ -480,7 +480,7 @@ class Splines(object):
             # evaluate cubic polinomial for a single interval
             self.interpolant[mask] = self.cubic_function(mask, i)
 # examples
-
+# if __name__ == '__main__':
     # # testing inner product
     # a, b = -1, 1
     # n = 2

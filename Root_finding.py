@@ -179,7 +179,7 @@ def newton_multidim(f, dfdx, x_0, n_max, min_error=1e-20):
 
 
 # examples
-
+# if __name__ == '__main__':
 #     # recursion testing
 #     a,b = -2,2
 #     x = np.linspace(a,b,100)

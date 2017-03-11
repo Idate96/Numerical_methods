@@ -181,7 +181,7 @@ class Grid2d(object):
 
 
 # examples
-
+# if __name__ == '__main__':
     # grid_0 = Grid(-1, 1, 4)
     #
     # uni_grid_0 = grid_0.uniform()
