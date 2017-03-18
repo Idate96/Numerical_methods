@@ -9,6 +9,7 @@ from scipy import integrate
 from incidence_matrices import incidence_m1d
 import matplotlib.pyplot as plt
 import numpy as np
+import pdb
 
 
 def original_f(x):
@@ -60,7 +61,6 @@ def poisson_homo(func, a, b, n, m, f_exact=None):
 
     # rhs
     M_0 = inner_product(basis, degree=0)
-    # print('Matrix M_0 : \n', M_0)
     f = func(grid.nodal_pts)
     # print('Function at nodal pts :\n', f)
     rhs = np.transpose(f) @ M_0
@@ -72,6 +72,7 @@ def poisson_homo(func, a, b, n, m, f_exact=None):
     # print('Eigenvalues N: ', np.linalg.eig(N)[0])
     # solve linear system
     c = np.linalg.inv(N) @ rhs
+    print(N)
 
     if f_exact is not None:
         error_norm = l2_error_norm(c, basis.lagrange, f_exact, x)
@@ -152,18 +153,27 @@ def l2_error_norm(c, basis_func, f_exact, x):
     return integral ** (0.5)
 
 
-def plot_convergence(error_norm, n_0):
+def plot_convergence(error_norm, n_0, save=False, show=True):
     """Plot convergence rate
     Args:
         error_norm (np.array) = array containing error norm for incresing n
         n_0 (int) = num dof + 1 for the first norm
     """
+    fig = plt.figure
     n = np.arange(n_0, np.size(error_norm) + n_0)
-    linear_conv = np.ones((np.size(error_norm)))
-    for i, el in enumerate(linear_conv):
-        linear_conv[i] = el / 10 ** i
+    x = np.arange(10)
+    linear_conv = np.ones((np.size(x)))
+    for i, xi in enumerate(x):
+        linear_conv[i] = 1 / 10 ** i
     print(n.shape)
     print(error_norm.shape)
-    plt.plot(n, np.log(linear_conv))
-    plt.plot(n, np.log(error_norm))
-    plt.show()
+    plt.plot(x, np.log10(linear_conv), label='Gradient 1')
+    plt.plot(n, np.log10(error_norm), '-o', label='Error norm')
+    plt.title('Error convergence rate')
+    plt.ylabel(r'log(ϵ)')
+    plt.xlabel('Number subelements')
+    plt.legend()
+    if save:
+        plt.savefig('images/convergence.png', bbox_inches='tight')
+    if show:
+        plt.show()

@@ -26,11 +26,11 @@ def multiple_poisson(n_0, n_f):
 if __name__ == '__main__':
     n_0 = 5
     n_f = 7
-    multiple_poisson(n_0, n_f)
 
+    multiple_poisson(n_0, n_f)
     # load convergence_sin2pix
-    # error_conv = np.loadtxt('data/convergence_sin2pix.csv')
-    # poisson.plot_convergence(error_conv, n_0)
+    error_conv = np.loadtxt('data/convergence_sin2pix.csv')
+    poisson.plot_convergence(error_conv, n_0, save=True)
 
     # interval domain
     # a, b = -1, 1
