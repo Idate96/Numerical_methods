@@ -1,6 +1,7 @@
 """This modules contains quadrature methods."""
 from grid import Grid
 from legendre_functions import legendre_rec
+import numpy an np
 
 
 def quad_glob(fs, a, b, n):
@@ -43,3 +44,70 @@ def quad_glob(fs, a, b, n):
             value += value_partial
     # TODO(scaling to arbitrary interval)
     return value
+
+
+def quad_trap(a, b, n, f, exact_int=0):
+    """Trapezoid quadrature method.
+
+        Args:
+            a (float) = integration interval start
+            b (float) = integration interval end
+            n (int) = number of subintervals of integration
+            f (obj func) = function to be integrated.
+            exact_int (float : optional) = exact integral value
+
+        Returns:
+            integral_value (float) = value of the integral_value.
+            error (float) = error of integration if available
+    """
+    # subintervals
+    x = np.linspace(a, b, n + 1)
+    # spacing
+    h = (b - a) / n
+    # trap quadrature
+    num_int = h / 2 * (f(x) + f(x + h))
+    # sum value of subintervals
+    integral_value = np.sum(num_int[:-1])
+    return integral_value, integral_value - exact_int
+
+
+def quad_gauss(a, b, n, f, exact_int=0):
+    """Gauss quadrature.
+        Args:
+            a (float) = integration interval start
+            b (float) = integration interval end
+            n (int) = number of subintervals of integration
+            f (obj func) = function to be integrated.
+            exact_int (float : optional) = exact integral value
+
+        Returns:
+            integral_value (float) = value of the integral_value.
+            error (float) = error of integration if available
+    """
+    x = np.linspace(a, b, n + 1)
+    h = (b - a) / n
+    num_int = h / 2 * (f(x + h * ((-1 / 3 ** 0.5 + 1) / 2)) +
+                       f(x + h * ((1 / 3 ** 0.5 + 1) / 2)))
+    integral_value = np.sum(num_int[:-1])
+    return integral_value, integral_value - exact_int
+
+
+def quad_simpson(a, b, n, f, exact_int=0):
+    """Simpson quadrature.
+
+        Args:
+            a (float) = integration interval start
+            b (float) = integration interval end
+            n (int) = number of subintervals of integration
+            f (obj func) = function to be integrated.
+            exact_int (float : optional) = exact integral value
+
+        Returns:
+            integral_value (float) = value of the integral_value.
+            error (float) = error of integration if available
+    """
+    x = np.linspace(a, b, n + 1)
+    h = (b - a) / n
+    num_int = h / 2 * (1 / 3 * f(x) + 4 / 3 * f(x + h / 2) + 1 / 3 * f(x + h))
+    integral_value = np.sum(num_int[:-1])
+    return integral_value, integral_value - exact_int
