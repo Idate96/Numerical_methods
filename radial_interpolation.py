@@ -1,8 +1,10 @@
+"""This module contains methods to perform radial interpolation in 1D and 2D."""
 import numpy as np
 import matplotlib.pyplot as plt
 from grid import Grid, Grid2d
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from matplotlib import cm
+import pdb
 
 # radial functions
 
@@ -28,7 +30,7 @@ def test_func(x):
 
 
 def test_func2d(x, y):
-    return y ** 2 / (1. + x ** 2)
+    return y / (2. + x ** 2)
 
 
 def metric_1d(x_1, x_2):
@@ -138,7 +140,7 @@ def interpolation_coeff2d(radial_func, l, f_exact, nodal_pts):
     if callable(f_exact):   # check if is a function
         f_i = f_exact(nodal_pts[:, 0], nodal_pts[:, 1])
     else:
-        assert isinstance(f_i, np.ndarray), "An array should be provided"
+        assert isinstance(f_exact, np.ndarray), "An array should be provided"
         f_i = f_exact
     coeffs = np.linalg.solve(V, f_i)    # solve linear system
     return coeffs
@@ -251,6 +253,10 @@ def plot_interpolation(f, interpolated_f, x, plot_error=False):
     plt.show()
 
 
+def reshape_pts(nodal_pts):
+    nodal_pts = nodal_pts.reshape(np.shape(grid.nodal_pts)[0] * np.shape(grid.nodal_pts)[1], 2)
+    return nodal_pts
+
 # examples
 if __name__ == '__main__':
     # # 1d example
@@ -265,6 +271,7 @@ if __name__ == '__main__':
 
     # # 2d example
     # init domain
+
     x = np.linspace(-5, 5, 100)
     y = np.linspace(-5, 5, 100)
     xx, yy = np.meshgrid(x, y)
@@ -273,13 +280,20 @@ if __name__ == '__main__':
     # # ex distance of domain[i,j] wrt to (0,0) is dist[i,j] cool!
     grid = Grid2d((-5, -5), (5, 5), (20, 20))   # generate grid
     grid.uniform()  # uniform grid
+
+    # reshape nodal pts for the discrete interpolation
+    nodal_pts_reshaped = reshape_pts(grid.nodal_pts)
+    # feed new grid nodal pts to func to generate an array of pts
+    test_func_data = test_func2d(nodal_pts_reshaped[:, 0], nodal_pts_reshaped[:, 1])
+
+    # use old setting of nodal pts for coeffs func
     # calculate interp coeff
-    coeffs = interpolation_coeff2d(phi_linear, 1, test_func2d, grid.nodal_pts)
+    coeffs = interpolation_coeff2d(phi_linear, 1, test_func_data, grid.nodal_pts)
     # calculate basis func on the domain
     basis_2d = construct_basis2d(phi_linear, 1, grid.nodal_pts, (xx, yy))
     # reconstruct interpolant
     interpolant = reconstruct2d(coeffs, basis_2d)
     # plotting
-    plot_radial(phi_invquad, 1, xx, yy)
+    # plot_radial(phi_invquad, 1, xx, yy)
     plot_function2d(interpolant, xx, yy)
     plot_function2d(test_func2d(xx, yy), xx, yy)
