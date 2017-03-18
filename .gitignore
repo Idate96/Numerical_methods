@@ -1,0 +1,5 @@
+\__pycache__
+\.idea
+\images
+\.ipynb_checkpoints
+.DS_Store
