@@ -1,4 +1,4 @@
-"""This modules contains methods to take numerical derivatives"""
+"""This modules contains methods to take numerical derivatives."""
 import numpy as np
 from grid import Grid
 import matplotlib.pyplot as plt
