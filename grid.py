@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from legendre_functions import legendre_prime, legendre_double_prime_recursive
 from root_finding import newton_method
+import pickle
+import time
 
 
 class Grid(object):
@@ -56,24 +58,39 @@ class Grid(object):
         Returns:
             nodal_pts (np.array)
         """
-        # Chebychev nodes as initial value for newton method
-        x_0 = np.cos(np.arange(1, self.n) / self.n * np.pi)
-        self.nodal_pts = np.empty(self.n + 1)
-        # Last and first pts are fixed for every n
-        self.nodal_pts[-1] = -1
-        self.nodal_pts[0] = 1
-        # Newton's method to find the root
-        for i, ch_pt in enumerate(x_0):
-            leg_p = partial(legendre_prime, n=self.n)
-            leg_pp = partial(legendre_double_prime_recursive, n=self.n)
-            self.nodal_pts[i + 1] = newton_method(leg_p, leg_pp, ch_pt, 40)[0]
+        try:
+            self.nodal_pts = pickle.load(open("data/grid/gauss_n" + str(self.n) + ".p", "rb"))
+        except (OSError, IOError) as e:
+            # Chebychev nodes as initial value for newton method
+            x_0 = np.cos(np.arange(1, self.n) / self.n * np.pi)
+            self.nodal_pts = np.empty(self.n + 1)
+            # Last and first pts are fixed for every n
+            self.nodal_pts[-1] = -1
+            self.nodal_pts[0] = 1
+            # Newton's method to find the root
+            for i, ch_pt in enumerate(x_0):
+                leg_p = partial(legendre_prime, n=self.n)
+                leg_pp = partial(legendre_double_prime_recursive, n=self.n)
+                self.nodal_pts[i + 1] = newton_method(leg_p, leg_pp, ch_pt, 40)[0]
+            pickle.dump(self.nodal_pts, open("data/grid/gauss_n" + str(self.n) + ".p", "wb"))
         # scale to arbitrary domain
         self.linear_scaling()
         return self.nodal_pts
 
+    def dual_central(self):
+        self.gauss_lobatto()
+        tmp_nodal_pts = np.ones((np.size(self.nodal_pts) + 1))
+        for i in range(0, self.n):
+            tmp_nodal_pts[i + 1] = (self.nodal_pts[i] + self.nodal_pts[i + 1]) / 2
+        # self.nodal_pts.append(self.b)
+        tmp_nodal_pts[0] = self.a
+        tmp_nodal_pts[-1] = self.b
+        self.nodal_pts = tmp_nodal_pts
+        return self.nodal_pts
+
     def plot(self, show=True):
         """Plot the grid."""
-        plt.plot(self.nodal_pts, np.zeros(self.n + 1), '-o')
+        plt.plot(self.nodal_pts, np.zeros(np.size(self.nodal_pts)), '-o')
         if show:
             plt.show()
 
@@ -90,7 +107,7 @@ def plot_grids(grids, *args, show=True, save=False):
         args = label for the plot, grid ith receive label ith
     """
     # add the grids to the plot with labels
-    if np.ndim(grids) > 1:
+    if np.size(grids) > 1:
         for i, grid in enumerate(grids):
             if args:
                 plt.plot(grid, np.ones(np.size(grid)) * i, '-o', label=args[i])
@@ -171,26 +188,41 @@ class Grid2d(object):
         plt.xlabel('x')
         plt.show()
 
-    def __str__(self):
-        """New reprensentation for the grid."""
 
-        nodalpts = "The nodal points are \n" + str(self.nodal_pts)
-        description = "\nThe grid is organized as follows:\ngrid[0,0] = " + str(self.nodal_pts[0, 0]) + "\ngrid[0,-1] = " + str(self.nodal_pts[0, -1]) + "\ngrid[-1,0] = " + \
-            str(self.nodal_pts[-1, 0]) + "\ngrid[-1,-1] = " + str(self.nodal_pts[-1, -1])
-        return nodalpts + description
+def check_dual_grid(nodes, dual_nodes):
+    naked_dual_nodes = dual_nodes[1:-1]
+    compatible = True
+    for i in range(len(nodes) - 1):
+        if not nodes[i] < naked_dual_nodes[i] < nodes[i + 1]:
+            compatible = False
+    return compatible
+
+    # def __str__(self):
+    #     """New reprensentation for the grid."""
+    #
+    #     nodalpts = "The nodal points are \n" + str(self.nodal_pts)
+    #     description = "\nThe grid is organized as follows:\ngrid[0,0] = " + str(self.nodal_pts[0, 0]) + "\ngrid[0,-1] = " + str(self.nodal_pts[0, -1]) + "\ngrid[-1,0] = " +
+    #         str(self.nodal_pts[-1, 0]) + "\ngrid[-1,-1] = " + str(self.nodal_pts[-1, -1])
+    #     return nodalpts + description
 
 
 # examples
-# if __name__ == '__main__':
-    # grid_0 = Grid(-1, 1, 4)
+if __name__ == '__main__':
+    dual = Grid(-1, 1, 4)
+    primal = Grid(-1, 1, 4)
     #
     # uni_grid_0 = grid_0.uniform()
-    # lob_grid_0 = grid_0.gauss_lobatto()
+    nodes = primal.gauss_lobatto()
+    dual_nodes = dual.dual_central()
+    print("The grid are compatible : ", check_dual_grid(nodes, dual_nodes))
+
     # ch_grid_0 = grid_0.chebychev()
+    # dual_lob = grid_0.dual_central()
     #
+    plot_grids([nodes, dual_nodes], 'primal', 'dual', "lobatto grids")
     # plot_grids([uni_grid_0, ch_grid_0, lob_grid_0], 'Uniform',
     #            'Chebychev', 'Gauss-Lobatto', 'Grid comparison', save=False)
-
+    # plot_grids([lob_grid_0, dual_lob], 'Lobatto', 'Dual', 'Dual and Primal complex', save=False)
     # grid2d = Grid2d((-1, -1), (1, 1), (4, 4))
     # grid2d.gauss_lobatto()
     # grid2d.plot()

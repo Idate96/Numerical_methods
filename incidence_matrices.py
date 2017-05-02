@@ -5,7 +5,7 @@ import numpy as np
 def incidence_m1d(n):
     """Calculate incidence matrix.
 
-    Matrix E^(01) is the boundary operator showing the relationship between nodal point and the edges that connect them. The sense of the transformation is 1 - > 0.
+    Matrix E_(01) is the boundary operator showing the relationship between nodal point and the edges that connect them. The sense of the transformation is 1 - > 0.
     The coboundary operator, the discrete version of the exterior derivative is the transpose (being the adjoint).
     The inner orientation of the points is assumed to be 'sink'.
     The inner orientation of the edges is assumed positive if directed on the right.

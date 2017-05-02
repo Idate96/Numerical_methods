@@ -1,7 +1,7 @@
 """This modules contains quadrature methods."""
 from grid import Grid
 from legendre_functions import legendre_rec
-import numpy an np
+import numpy as np
 
 
 def quad_glob(fs, a, b, n):

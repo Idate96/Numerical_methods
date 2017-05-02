@@ -480,20 +480,27 @@ class Splines(object):
             # evaluate cubic polinomial for a single interval
             self.interpolant[mask] = self.cubic_function(mask, i)
 # examples
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # # testing inner product
-    # a, b = -1, 1
-    # n = 2
+    a, b = -1, 1
+    p = 3
     # n_glob_int = math.ceil((n ** 2 + 1) / 2)
-    # x = np.linspace(a, b, 101)
+    x = np.linspace(a, b, 101)
     # #
-    # grid = Grid(a, b, n)
-    # grid.gauss_lobatto()
+    grid = Grid(a, b, p)
+    dual_grid = Grid(a, b, p)
+    dual_grid.dual_central()
+    grid.gauss_lobatto()
     # # grid.plot()
     # #
-    # basis = PolyBasis(x, grid)
+    basis = PolyBasis(x, grid)
+    dual_basis = PolyBasis(x, dual_grid)
+    print("p basis {0} \np dual basis {1}" .format(basis.n, dual_basis.n))
     # # basis.lagrange()
-    # # basis.edge()
+    # basis.edge(), basis.plot()
+    basis.edge(), basis.plot()
+    dual_basis.edge(), dual_basis.plot()
+    plt.show()
     # M = stiffness_matrix.inner_product(basis, degree=1)
     # basis_0 = partial(basis.edge, index_basis=0)
     # # basis_1

@@ -6,7 +6,7 @@ import numpy as np
 from scipy import integrate
 
 
-def product_basis(x, fs, indexes, g=1):
+def product_basis(x, fs, indexes, g=1, a=-1, b=1):
     """Multiply two functions pointwise.
 
     Useful function when the product of more than one function needs to be passed to a quadrature.
@@ -24,11 +24,11 @@ def product_basis(x, fs, indexes, g=1):
     value = 1
     # pointwise multiply the basis functions
     for i, f in enumerate(fs):
-        value *= f(x, indexes[i])
+        value *= f((b - a) / 2 * (x + 1) + a, indexes[i])
     return value * g
 
 
-def inner_product(basis, degree):
+def inner_product(basis, degree, a=-1, b=1):
     """Calculate the inner product of two basis functios.
 
     Args:
@@ -46,17 +46,20 @@ def inner_product(basis, degree):
         M = np.zeros((basis.n - 1, basis.n - 1))
         for i in range(basis.n - 1):
             for j in range(i + 1):
-                prod = partial(product_basis, fs=fs, indexes=[i + 1, j + 1])
+                prod = partial(product_basis, fs=fs, indexes=[i + 1, j + 1], a=a, b=b)
                 # M[i, j] = integration.quad_glob([prod], -1, 1, degree_quad)
-                M[i, j] = integrate.quad(prod, -1, 1)[0]
+                linear_scaling = 2 / (b - a)
+                # linear_scaling = (b - a) / 2
+                M[i, j] = linear_scaling * integrate.quad(prod, -1, 1)[0]
                 M[j, i] = M[i, j]
     elif degree == 0:
         fs = [basis.lagrange, basis.lagrange]
         M = np.zeros((basis.n, basis.n))
         for i in range(basis.n):
             for j in range(i + 1):
-                prod = partial(product_basis, fs=fs, indexes=[i, j])
-                M[i, j] = integrate.quad(prod, -1, 1)[0]
+                prod = partial(product_basis, fs=fs, indexes=[i, j], a=a, b=b)
+                linear_scaling = 2 / (b - a)
+                M[i, j] = linear_scaling * integrate.quad(prod, -1, 1)[0]
                 # M[i, j] = integration.quad_glob([prod], -1, 1, degree_quad)
                 M[j, i] = M[i, j]
     return M

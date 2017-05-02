@@ -5,6 +5,7 @@ import incidence_matrices
 from grid import Grid
 from poly_interpolation import PolyBasis
 import pickle
+import poisson_dual
 
 
 def multiple_poisson(n_0, n_f, a, b):
@@ -77,7 +78,7 @@ def convergence_analysis(hs, ps):
             "data/convergence/convergence_p" + str(ps[0]) + "-" + str(ps[1]) + "-h" + str(h) + ".p", "wb"))
 
 
-def convergence_analysis_specific(hs, ps, mixed=False):
+def convergence_analysis_specific(hs, ps, type='mixed'):
     """Convergence analysis for specific values of h and p.
 
     Args:
@@ -97,7 +98,11 @@ def convergence_analysis_specific(hs, ps, mixed=False):
     if hs is not None:
         for h in hs:
             p = 6
-            if mixed:
+
+            if type == 'dual_direct':
+                phi, x, error_h = poisson_dual.direct_dual_poisson_hp(
+                    h, p, a, b, int(m / h), func, f_exact)
+            if type == 'mixed':
                 phi, sigma, error_h = poisson.mixed_hp_poisson(
                     h, p, a, b, int(m / h), func, f_exact)
                 x = np.linspace(a, b, len(phi))
@@ -106,7 +111,11 @@ def convergence_analysis_specific(hs, ps, mixed=False):
             error_hystory_h.append((h, error_h))
             poisson.plot_solution(phi, f_exact, x,
                                   'sin2pixh-11',  str(h), str(p), save=False, show=False)
-        if mixed:
+
+        if type == 'dual_direct':
+            pickle.dump(error_hystory_h, open(
+                "data/convergence/dual_direct/convergence_h_specific" + str(hs[0]) + "-" + str(hs[-1]) + "-p" + str(p) + ".p", "wb"))
+        if type == 'mixed':
             pickle.dump(error_hystory_h, open(
                 "data/convergence/mixed/convergence_h_specific" + str(hs[0]) + "-" + str(hs[-1]) + "-p" + str(p) + ".p", "wb"))
         else:
@@ -115,8 +124,12 @@ def convergence_analysis_specific(hs, ps, mixed=False):
 
     if ps is not None:
         for p in ps:
-            h = 6
-            if mixed:
+            h = 1
+            if type == 'dual_direct':
+                phi, x, error_p = poisson_dual.direct_dual_poisson_hp(
+                    h, p, a, b, int(m / h), func, f_exact)
+
+            if type == 'mixed':
                 phi, sigma, error_p = poisson.mixed_hp_poisson(
                     h, p, a, b, int(m / h), func, f_exact)
                 x = np.linspace(a, b, len(phi))
@@ -125,7 +138,10 @@ def convergence_analysis_specific(hs, ps, mixed=False):
             error_hystory_p.append((p, error_p))
             poisson.plot_solution(phi, f_exact, x, r'exact $f(x) = sin(2 \pi x)$',
                                   str(h), str(p), save=False, show=False)
-        if mixed:
+        if type == 'dual_direct':
+            pickle.dump(error_hystory_p, open(
+                "data/convergence/dual_direct/convergence_p_specific" + str(ps[0]) + "-" + str(ps[-1]) + "-p" + str(p) + ".p", "wb"))
+        if type == 'mixed':
             pickle.dump(error_hystory_p, open(
                 "data/convergence/mixed/convergence_p_specific" + str(ps[0]) + "-" + str(ps[-1]) + "-p" + str(p) + ".p", "wb"))
         else:
@@ -140,20 +156,21 @@ if __name__ == '__main__':
     # poisson.mixed_hp_poisson(3, 2, a, b, 4, poisson.rhs_sin2, poisson.original_f_sin2)
 
     #
-    # cases = [15, 20, 25, 50, 100]
-    # cases_h_specific = lis/t(range(2, 11)) + cases
+    cases = [15, 20, 25, 50, 100, 200]
+    cases_h_specific = list(range(2, 11)) + cases
     # print(cases_h_specific)
-    # cases_p_specific = list(range(2, 6))
-    convergence_analysis_specific(None, cases_p_specific, mixed=True)
-    # error_h = pickle.load(open('data/convergence/convergence_h_specific2-100-p6.p', "rb"))
+    cases_p_specific = list(range(2, 15))
+    convergence_analysis_specific(None, cases_p_specific, type='dual_direct')
+    error_h = pickle.load(
+        open('data/convergence/dual_direct/convergence_h_specific2-200-p6.p', "rb"))
+    poisson.plot_convergence(error_h, 'h', 6, type='Dual direct')
     # error_p = pickle.load(open('data/convergence/convergence_p_specific2-4-p4.p', "rb"))
-    error_p_mixed = pickle.load(
-        open('data/convergence/mixed/convergence_p_specific2-13-p13.p', "rb"))
+    # error_p_mixed = pickle.load(open('data/convergence/convergence_p_specific2-17-p17.p', "rb"))
     # print("error h", error_h)
     # # print('error_h ', error_h)
     # # print('error_h', error_h)
     # poisson.plot_convergence(error_p, 'p', 6)
-    poisson.plot_convergence(error_p_mixed, 'p', 6, mixed=True)
+    # poisson.plot_convergence(error_p_mixed, 'p', 6, mixed=False)
     # run_hp_poisson(a, b, 3, 4, 50)
     # difference = poisson.reverse_engineer(4, 6, 26, poisson.rhs_sin, a, b, poisson.original_f)
     # n = 3
